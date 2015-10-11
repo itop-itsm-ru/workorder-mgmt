@@ -1,0 +1,5 @@
+{
+    "require": {
+        "mtdowling/cron-expression": "^1.0"
+    }
+}
