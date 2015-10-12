@@ -84,7 +84,7 @@
           <default_value/>
           <is_null_allowed>false</is_null_allowed>
           <!-- TO-DO: Validation needed! -->
-          <validation_pattern></validation_pattern>
+          <validation_pattern>^[\*,/\-0-9]+\s[\*,/\-0-9]+\s[\*,/\-\?LW0-9A-Za-z]+\s[\*,/\-0-9A-Z]+\s(\*|([0-7]|(SUN|MON|TUE|WED|THU|FRI|SAT))(L?|#[1-5]))([/\,\-]([0-7]|(SUN|MON|TUE|WED|THU|FRI|SAT))+)*(\s[\*,/\-0-9]*)?$</validation_pattern>
         </field>
         <field id="action_date" xsi:type="AttributeDateTime">
           <always_load_in_tables>true</always_load_in_tables>
