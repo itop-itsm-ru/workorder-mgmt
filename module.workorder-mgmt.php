@@ -17,7 +17,7 @@ SetupWebPage::AddModule(
 		'dependencies' => array(
 			'itop-tickets/2.2.0',
 			'itop-config-mgmt/2.2.0'
-		),
+			),
 		'mandatory' => false,
 		'visible' => true,
 
@@ -25,7 +25,9 @@ SetupWebPage::AddModule(
 		//
 		'datamodel' => array(
 			'model.workorder-mgmt.php',
-			'main.workorder-mgmt.php'
+			'main.workorder-mgmt.php',
+			'actioncreateobject.class.php',
+			'dashletcalendar.class.php'
 		),
 		'webservice' => array(
 
