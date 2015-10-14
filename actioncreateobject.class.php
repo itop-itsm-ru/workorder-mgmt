@@ -80,7 +80,6 @@ class ActionCreateFromTemplate extends ActionCreateObject
     {
       $oLog = null;
     }
-
     try
     {
       $sRes = $this->_DoExecute($oTrigger, $aContextArgs, $oLog);
@@ -94,7 +93,6 @@ class ActionCreateFromTemplate extends ActionCreateObject
         $sPrefix = '';
       }
       $oLog->Set('message', $sPrefix.$sRes);
-
     }
     catch (Exception $e)
     {
@@ -111,6 +109,7 @@ class ActionCreateFromTemplate extends ActionCreateObject
 
   protected function _DoExecute($oTrigger, $aContextArgs, &$oLog)
   {
+    // Х.З. зачем это.
     // $sPreviousUrlMaker = ApplicationContext::SetUrlMakerClass();
     try
     {

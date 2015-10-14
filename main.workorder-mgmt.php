@@ -2,6 +2,7 @@
 
 require_once 'vendor/autoload.php';
 
+// TODO: iBackgroundProcess переделать в iScheduledProcess
 class CheckScheduledActivity implements iBackgroundProcess
 {
   public function GetPeriodicity()
