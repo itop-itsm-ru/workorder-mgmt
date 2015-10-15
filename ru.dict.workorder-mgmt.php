@@ -97,7 +97,7 @@ Dict::Add('RU RU', 'Russian', 'Russian', array(
 
   'Menu:ScheduledActivity:Shortcuts' => 'Плановая активность',
   'Menu:ScheduledActivity:Shortcuts+' => 'Плановая активность',
-  'Menu:ScheduledActivity:NewScheduledActivity' => 'Новая планова активность',
+  'Menu:ScheduledActivity:NewScheduledActivity' => 'Новая плановая активность',
   'Menu:ScheduledActivity:NewScheduledActivity+' => 'Создать плановую активность',
   'Menu:ScheduledActivity:AllScheduledActivity' => 'Все плановые активности',
   'Menu:ScheduledActivity:AllScheduledActivity+' => 'Все плановые активности',
