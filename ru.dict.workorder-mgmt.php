@@ -65,6 +65,10 @@ Dict::Add('RU RU', 'Russian', 'Russian', array(
 |    +-------------------- Час (0 - 23)
 +------------------------- Минута (0 - 59)',
 
+  'Class:ScheduledActivity/Stimulus:ev_activate' => 'Активировать',
+  'Class:ScheduledActivity/Stimulus:ev_activate+' => '',
+  'Class:ScheduledActivity/Stimulus:ev_deactivate' => 'Деактивировать',
+  'Class:ScheduledActivity/Stimulus:ev_deactivate+' => '',
 
   'Class:lnkDocumentToTicket' => 'Связь Документ/Тикет',
   'Class:lnkDocumentToTicket+' => 'Связь Документ/Тикет',
