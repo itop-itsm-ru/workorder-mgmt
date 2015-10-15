@@ -27,8 +27,8 @@ class DashletCalendar extends Dashlet
 
     $sId = 'calendar';
 
+    $oPage->add_linked_stylesheet('../'.$this->sModuleUrlBase.'custom.css');
     $oPage->add_linked_stylesheet('../'.$this->sModuleUrlBase.'fullcalendar/fullcalendar.min.css');
-    // $oPage->add_linked_stylesheet('../'.$this->sModuleUrlBase.'style.css');
     // $oPage->add_linked_script('../'.$this->sModuleUrlBase.'fullcalendar/lib/jquery.min.js');
     $oPage->add_linked_script('../'.$this->sModuleUrlBase.'fullcalendar/lib/moment.min.js');
     $oPage->add_linked_script('../'.$this->sModuleUrlBase.'fullcalendar/fullcalendar.min.js');
@@ -44,23 +44,18 @@ class DashletCalendar extends Dashlet
     {
       $oPage->add('<h1>'.$sHtmlTitle.'</h1>');
     }
-    $oObjectSet = new DBObjectSet(DBObjectSearch::FromOQL($sQuery));
-    $aEvents = array();
-    while ($oObj = $oObjectSet->Fetch()) {
-
-      $aEvent = array();
-      $aEvent['title'] = $oObj->Get('name');
-      $aEvent['start'] = $oObj->Get('start_date');
-      $aEvent['end'] = $oObj->Get('end_date');
-      $aEvent['url'] = ApplicationContext::MakeObjectUrl(get_class($oObj), $oObj->GetKey());
-      $aEvents[] = $aEvent;
-    }
-    $jsonEvents = json_encode($aEvents);
+    $sURL = '../'.$this->sModuleUrlBase.'ajax.php';
     $oPage->add_ready_script(
 <<<EOF
     $('#calendar').fullCalendar({
       lang: 'ru',
-      events: $jsonEvents,
+      events: '$sURL',
+      timeFormat: 'H:mm',
+      header: {
+          left:   'title',
+          center: 'prev, today, next',
+          right:  'month, agendaWeek, agendaDay'
+      }
     })
 EOF
     );
@@ -73,9 +68,9 @@ EOF
     $oField = new DesignerTextField('title', Dict::S('UI:DashletObjectList:Prop-Title'), $this->aProperties['title']);
     $oForm->AddField($oField);
 
-    $oField = new DesignerLongTextField('query', Dict::S('UI:DashletObjectList:Prop-Query'), $this->aProperties['query']);
-    $oField->SetMandatory();
-    $oForm->AddField($oField);
+    // $oField = new DesignerLongTextField('query', Dict::S('UI:DashletObjectList:Prop-Query'), $this->aProperties['query']);
+    // $oField->SetMandatory();
+    // $oForm->AddField($oField);
   }
 }
 
