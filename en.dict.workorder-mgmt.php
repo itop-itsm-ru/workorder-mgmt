@@ -2,14 +2,14 @@
 /**
  * Localized data
  *
- * @copyright   Copyright (C) 2013 XXXXX
+ * @copyright   Copyright (C) 2015 Vladimir Kunin <v.b.kunin@gmail.com>
  * @license     http://opensource.org/licenses/AGPL-3.0
  */
 
 Dict::Add('EN US', 'English', 'English', array(
 	// Dictionary entries go here
   'Class:ScheduledActivity/Attribute:periodicity' => 'Periodicity',
-  'Class:ScheduledActivity/Attribute:periodicity+' => 'Crontab-like pattern',
+  'Class:ScheduledActivity/Attribute:periodicity+' => 'Crontab-like pattern check on http://cronchecker.net/',
   'Class:ScheduledActivity/Attribute:periodicity?' => 'Check your pattern on http://cronchecker.net/
 *    *    *    *    *    *
 -    -    -    -    -    -
