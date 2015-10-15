@@ -24,7 +24,7 @@ class CheckScheduledActivity implements iBackgroundProcess
       {
         if ($oObj->Get($sAttCode) < $sNow)
         {
-          $aList[] = $oObj->Get('name').': ['.$sAttCode.']';
+          $aList[] = $oObj->Get('title').': ['.$sAttCode.']';
           // TODO: Делать отдельный триггер на каждую активность?
           $oTriggerSet = new DBObjectSet(
             DBObjectSearch::FromOQL("SELECT TriggerOnScheduledActivity WHERE target_class = 'ScheduledActivity' AND action_type = :action_type"),
@@ -43,16 +43,16 @@ class CheckScheduledActivity implements iBackgroundProcess
             $aContextArgs = array();
             if ($sActionType == 'main')
             {
-              $aContextArgs['this->next_action_date'] = $this->GetActionDate(); // Текущее время не учитывается
-              $aContextArgs['this->wo_start_date'] = $this->Get($sAttCode);
+              $aContextArgs['this->next_action_date'] = $oObj->GetActionDate(); // Текущее время не учитывается
+              $aContextArgs['this->wo_start_date'] = $oObj->Get($sAttCode);
             }
             elseif ($sActionType == 'preliminary')
             {
-              $iActionDate = AttributeDateTime::GetAsUnixSeconds($this->Get($sAttCode)) + $this->GetPreActionInterval();
+              $iActionDate = AttributeDateTime::GetAsUnixSeconds($oObj->Get($sAttCode)) + $oObj->GetPreActionInterval();
               $aContextArgs['this->main_action_date'] = date($sFormat, $iActionDate);
               $aContextArgs['this->wo_start_date'] = $aContextArgs['this->main_action_date'];
             }
-            $iWOEndDate = AttributeDateTime::GetAsUnixSeconds($aContextArgs['this->wo_start_date']) + $this->Get('wo_duration');
+            $iWOEndDate = AttributeDateTime::GetAsUnixSeconds($aContextArgs['this->wo_start_date']) + $oObj->Get('wo_duration');
             $aContextArgs['this->wo_end_date'] = date($sFormat, $iWOEndDate);
 
             while ($oTrigger = $oTriggerSet->Fetch())
@@ -60,17 +60,18 @@ class CheckScheduledActivity implements iBackgroundProcess
               $oTrigger->DoActivate(array_merge($oObj->ToArgs('this'), $aContextArgs));
             }
           }
-          // TODO: Заменить Reset на обновлнение соответствующей даты.
-          // $oObj->Reset($sAttCode);
         }
       }
-      // Обновление должно выполниться, чтобы пересчитались даты
-      // if($oObj->IsModified())
-      // {
+      // TODO: Заменить Reset на обновлнение соответствующей даты.
+      $oObj->Reset($aActionAttCodes['main']);
+      $oObj->Reset($aActionAttCodes['preliminary']);
+      // Обновление объекта должно выполниться, чтобы пересчитались даты
+      if($oObj->IsModified())
+      {
       CMDBObject::SetTrackInfo("Automatic - Scheduled Activity");
       $oMyChange = CMDBObject::GetCurrentChange();
       $oObj->DBUpdateTracked($oMyChange, true /*skip security*/);
-      // }
+      }
     }
     $iProcessed = count($aList);
     return "processed scheduled activity: $iProcessed, " .implode(", ", $aList);

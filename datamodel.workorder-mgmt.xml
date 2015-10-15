@@ -18,7 +18,7 @@
           </attributes>
         </naming>
         <display_template/>
-        <icon/>
+        <icon>images/timetable48.png</icon>
         <reconciliation>
           <attributes>
             <attribute id="title"/>
@@ -82,8 +82,7 @@
         <field id="periodicity" xsi:type="AttributeString">
           <sql>periodicity</sql>
           <default_value/>
-          <is_null_allowed>false</is_null_allowed>
-          <!-- TO-DO: Validation needed! -->
+          <is_null_allowed>true</is_null_allowed>
           <validation_pattern>^[\*,/\-0-9]+\s[\*,/\-0-9]+\s[\*,/\-\?LW0-9A-Za-z]+\s[\*,/\-0-9A-Z]+\s(\*|([0-7]|(SUN|MON|TUE|WED|THU|FRI|SAT))(L?|#[1-5]))([/\,\-]([0-7]|(SUN|MON|TUE|WED|THU|FRI|SAT))+)*(\s[\*,/\-0-9]*)?$</validation_pattern>
         </field>
         <field id="action_date" xsi:type="AttributeDateTime">
@@ -103,7 +102,13 @@
           <is_null_allowed>false</is_null_allowed>
           <display_style>radio_horizontal</display_style>
         </field>
-        <field id="pre_action_interval_value" xsi:type="AttributeInteger">
+        <field id="pre_action_interval" xsi:type="AttributeDuration">
+          <always_load_in_tables>true</always_load_in_tables>
+          <sql>pre_action_interval</sql>
+          <default_value/>
+          <is_null_allowed>true</is_null_allowed>
+        </field>
+        <!-- <field id="pre_action_interval_value" xsi:type="AttributeInteger">
           <sql>pre_action_interval_value</sql>
           <default_value>2</default_value>
           <is_null_allowed>true</is_null_allowed>
@@ -118,7 +123,7 @@
           <default_value>hours</default_value>
           <is_null_allowed>true</is_null_allowed>
           <display_style>radio_horizontal</display_style>
-        </field>
+        </field> -->
         <field id="pre_action_date" xsi:type="AttributeDateTime">
           <always_load_in_tables>true</always_load_in_tables>
           <sql>pre_action_date</sql>
@@ -160,37 +165,15 @@
           <default_value/>
           <is_null_allowed>true</is_null_allowed>
         </field>
-        <!-- <field id="contacts_list" xsi:type="AttributeLinkedSetIndirect">
-          <linked_class>lnkContactToScheduledActivity</linked_class>
-          <ext_key_to_me>scheduledactivity_id</ext_key_to_me>
-          <count_min>0</count_min>
-          <count_max>0</count_max>
-          <ext_key_to_remote>contact_id</ext_key_to_remote>
-          <duplicates/>
-        </field>
-        <field id="document_list" xsi:type="AttributeLinkedSetIndirect">
+        <!-- <field id="document_list" xsi:type="AttributeLinkedSetIndirect">
           <linked_class>lnkDocumentToScheduledActivity</linked_class>
           <ext_key_to_me>scheduledactivity_id</ext_key_to_me>
           <count_min>0</count_min>
           <count_max>0</count_max>
           <ext_key_to_remote>document_id</ext_key_to_remote>
           <duplicates/>
-        </field>
-        <field id="functionalcis_list" xsi:type="AttributeLinkedSetIndirect">
-          <linked_class>lnkFunctionalCIToScheduledActivity</linked_class>
-          <ext_key_to_me>scheduledactivity_id</ext_key_to_me>
-          <count_min>0</count_min>
-          <count_max>0</count_max>
-          <ext_key_to_remote>functionalci_id</ext_key_to_remote>
-          <duplicates/>
-        </field>
-        <field id="workorders_list" xsi:type="AttributeLinkedSet">
-          <linked_class>WorkOrder</linked_class>
-          <ext_key_to_me>scheduledactivity_id</ext_key_to_me>
-          <count_min>0</count_min>
-          <count_max>0</count_max>
-        </field>
-        <field id="services_list" xsi:type="AttributeLinkedSetIndirect">
+        </field> -->
+        <!-- <field id="services_list" xsi:type="AttributeLinkedSetIndirect">
           <linked_class>lnkServiceToScheduledActivity</linked_class>
           <ext_key_to_me>scheduledactivity_id</ext_key_to_me>
           <count_min>0</count_min>
@@ -199,6 +182,69 @@
           <duplicates/>
         </field> -->
       </fields>
+      <lifecycle>
+        <attribute>status</attribute>
+        <highlight_scale>
+          <item id="active">
+            <rank>1</rank>
+            <color>HIGHLIGHT_CLASS_OK</color>
+            <icon>images/timetable48.png</icon>
+          </item>
+        </highlight_scale>
+        <stimuli>
+          <stimulus id="ev_activate" xsi:type="StimulusUserAction"/>
+          <stimulus id="ev_deactivate" xsi:type="StimulusUserAction"/>
+        </stimuli>
+        <states>
+          <state id="inactive">
+            <flags>
+              <attribute id="status">
+                <read_only/>
+              </attribute>
+              <attribute id="action_date">
+                <read_only/>
+              </attribute>
+              <attribute id="pre_action_date">
+                <read_only/>
+              </attribute>
+              <attribute id="private_log">
+                <hidden/>
+              </attribute>
+            </flags>
+            <transitions>
+              <transition id="ev_activate">
+                <target>active</target>
+                <actions/>
+              </transition>
+            </transitions>
+          </state>
+          <state id="active">
+            <highlight>
+              <code>active</code>
+            </highlight>
+            <inherit_flags_from>inactive</inherit_flags_from>
+            <flags>
+              <attribute id="periodicity">
+                <mandatory/>
+                <must_prompt/>
+              </attribute>
+              <attribute id="pre_action_enabled">
+                <mandatory/>
+                <must_prompt/>
+              </attribute>
+              <attribute id="pre_action_interval">
+                <must_prompt/>
+              </attribute>
+            </flags>
+            <transitions>
+              <transition id="ev_deactivate">
+                <target>inactive</target>
+                <actions/>
+              </transition>
+            </transitions>
+          </state>
+        </states>
+      </lifecycle>
       <methods>
         <method id="GetActionDate">
           <static>false</static>
@@ -249,20 +295,21 @@
             <![CDATA[
               public function GetPreActionInterval()
               {
-                $iValue = (int)$this->Get('pre_action_interval_value');
-                $sUnit = $this->Get('pre_action_interval_unit');
+                // $iValue = (int)$this->Get('pre_action_interval_value');
+                // $sUnit = $this->Get('pre_action_interval_unit');
                 // return DateInterval::createFromDateString($iValue.' '.$sUnit);
-                switch($sUnit) {
-                  // Start with selected units and then fall through to seconds
-                  case 'days':
-                  $iValue = $iValue * 24; // 24 hours in 1 day
-                  // Fall through
-                  case 'hours':
-                  $iValue = $iValue * 60; // 60 minutes in 1 hour
-                  // Fall through
-                  case 'minutes':
-                  $iValue = $iValue * 60; // 60 seconds in 1 minute
-                }
+                //switch($sUnit) {
+                  // // Start with selected units and then fall through to seconds
+                  // case 'days':
+                  // $iValue = $iValue * 24; // 24 hours in 1 day
+                  // // Fall through
+                  // case 'hours':
+                  // $iValue = $iValue * 60; // 60 minutes in 1 hour
+                  // // Fall through
+                  // case 'minutes':
+                  // $iValue = $iValue * 60; // 60 seconds in 1 minute
+                //}
+                $iValue = $this->Get('pre_action_interval');
                 $iMaxInterval = 2678400; // Max interval 2678400 seconds (31 days)
                 return $iPreActionInrerval = $iValue < $iMaxInterval ? $iValue : $iMaxInterval;
               }
@@ -335,31 +382,32 @@
             ]]>
           </code>
         </method>
-        <method id="GetAttributeFlags">
+        <!-- <method id="DisplayBareRelations">
           <static>false</static>
           <access>public</access>
-          <type>Overload-iDisplay</type>
-          <code><![CDATA[
-            public function GetAttributeFlags($sAttCode, &$aReasons = array(), $sTargetState = '')
-            {
-              $aHiddenAttrs = array('private_log');
-              $aReadOnlyAttrs = array('action_date','pre_action_date');
-              if (in_array($sAttCode, $aHiddenAttrs))
+          <type>Overload-cmdbAbstractObject</type>
+          <code>
+            <![CDATA[ function DisplayBareRelations(WebPage $oPage, $bEditMode = false)
               {
-                return OPT_ATT_HIDDEN;
+                // We don't need Relations bare
+                parent::DisplayBareRelations($oPage, $bEditMode);
               }
-              elseif (in_array($sAttCode, $aReadOnlyAttrs))
-              {
-                return OPT_ATT_READONLY;
-              }
-              else
-              {
-                return parent::GetAttributeFlags($sAttCode, $aReasons, $sTargetState);
-              }
-            }
             ]]>
           </code>
-        </method>
+        </method> -->
+        <!-- <method id="UpdateImpactedItems">
+          <static>false</static>
+          <access>public</access>
+          <type>Overload-cmdbAbstractObject</type>
+          <code>
+            <![CDATA[ function UpdateImpactedItems()
+              {
+                // We don't need Relations bare
+                parent::UpdateImpactedItems();
+              }
+            ]]>
+          </code>
+        </method> -->
       </methods>
       <presentation>
         <details>
@@ -410,30 +458,13 @@
                       <rank>80</rank>
                     </item>
                     <item id="end_date">
-                      <rank>100</rank>
+                      <rank>90</rank>
                     </item>
                     <item id="periodicity">
-                      <rank>110</rank>
+                      <rank>100</rank>
                     </item>
                     <item id="action_date">
-                      <rank>120</rank>
-                    </item>
-                  </items>
-                </item>
-                <item id="fieldset:ScheduledActivity:preaction">
-                  <rank>20</rank>
-                  <items>
-                    <item id="pre_action_enabled">
-                      <rank>124</rank>
-                    </item>
-                    <item id="pre_action_interval_value">
-                      <rank>126</rank>
-                    </item>
-                    <item id="pre_action_interval_unit">
-                      <rank>127</rank>
-                    </item>
-                    <item id="pre_action_date">
-                      <rank>130</rank>
+                      <rank>110</rank>
                     </item>
                   </items>
                 </item>
@@ -442,8 +473,22 @@
             <item id="col:col2">
               <rank>70</rank>
               <items>
-                <item id="fieldset:ScheduledActivity:WOTemplate">
+                <item id="fieldset:ScheduledActivity:preaction">
                   <rank>10</rank>
+                  <items>
+                    <item id="pre_action_enabled">
+                      <rank>10</rank>
+                    </item>
+                    <item id="pre_action_interval">
+                      <rank>20</rank>
+                    </item>
+                    <item id="pre_action_date">
+                      <rank>30</rank>
+                    </item>
+                  </items>
+                </item>
+                <item id="fieldset:ScheduledActivity:template">
+                  <rank>20</rank>
                   <items>
                     <item id="wo_name">
                       <rank>10</rank>
@@ -499,9 +544,9 @@
         </search>
         <list>
           <items>
-            <item id="title">
+            <!-- <item id="title">
               <rank>10</rank>
-            </item>
+            </item> -->
             <item id="org_id">
               <rank>20</rank>
             </item>
