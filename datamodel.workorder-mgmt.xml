@@ -73,8 +73,8 @@
             <value id="1">1</value>
           </values>
           <sql>pre_action_enabled</sql>
-          <default_value>0</default_value>
-          <is_null_allowed>false</is_null_allowed>
+          <default_value/>
+          <is_null_allowed>true</is_null_allowed>
           <display_style>radio_horizontal</display_style>
         </field>
         <field id="pre_action_interval" xsi:type="AttributeDuration">
