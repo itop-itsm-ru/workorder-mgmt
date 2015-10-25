@@ -13,16 +13,16 @@ class CheckScheduledActivity implements iBackgroundProcess
   public function Process($iTimeLimit)
   {
     $aList = array();
-    $sNow = date('Y-m-d H:i:s');
+    $sNow = date(AttributeDateTime::GetDateFormat());
     $aActionAttCodes = array('main' => 'action_date', 'preliminary' => 'pre_action_date');
-    $sOQL = "SELECT ScheduledActivity WHERE status = 'active' AND (action_date < '$sNow' OR (pre_action_enabled = '1' AND pre_action_date < '$sNow'))";
+    $sOQL = "SELECT ScheduledActivity WHERE status = 'active' AND ((action_date != '' AND action_date < '$sNow') OR (pre_action_enabled = '1' AND pre_action_date != '' AND pre_action_date < '$sNow'))";
     $oFilter = DBObjectSearch::FromOQL($sOQL);
     $oSet = new DBObjectSet($oFilter);
     while ((time() < $iTimeLimit) && ($oObj = $oSet->Fetch()))
     {
       foreach ($aActionAttCodes as $sActionType => $sAttCode)
       {
-        if ($oObj->Get($sAttCode) < $sNow)
+        if ($oObj->Get($sAttCode) != '' && $oObj->Get($sAttCode) < $sNow)
         {
           $aList[] = $oObj->Get('title').': ['.$sAttCode.']';
           // TODO: Делать отдельный триггер на каждую активность?
@@ -31,34 +31,10 @@ class CheckScheduledActivity implements iBackgroundProcess
             array(), // order by
             array('action_type' => $sActionType)
           );
-          if ($oTriggerSet->Count() > 0)
+          $aContextArgs = $oTriggerSet->Count() > 0 ? $this->GetContextArgs($oObj, $sActionType, $sAttCode) : [];
+          while ($oTrigger = $oTriggerSet->Fetch())
           {
-            // wo_start_date - время начала для наряда на работу
-            // wo_end_date - время окончания наряда (если wo_duration == 0, wo_end_date = wo_start_date)
-            //
-            // action_date - время основного действия, установленного в активности (м.б. текущая дата)
-            // next_action_date - время следующего основного действия в контексте текущего основного
-            // main_action_date - время основгого дейтсвия  контексте предварительного
-            $sFormat = AttributeDateTime::GetDateFormat();
-            $aContextArgs = array();
-            if ($sActionType == 'main')
-            {
-              $aContextArgs['this->next_action_date'] = $oObj->GetActionDate(); // Текущее время не учитывается
-              $aContextArgs['this->wo_start_date'] = $oObj->Get($sAttCode);
-            }
-            elseif ($sActionType == 'preliminary')
-            {
-              $iActionDate = AttributeDateTime::GetAsUnixSeconds($oObj->Get($sAttCode)) + $oObj->GetPreActionInterval();
-              $aContextArgs['this->main_action_date'] = date($sFormat, $iActionDate);
-              $aContextArgs['this->wo_start_date'] = $aContextArgs['this->main_action_date'];
-            }
-            $iWOEndDate = AttributeDateTime::GetAsUnixSeconds($aContextArgs['this->wo_start_date']) + $oObj->Get('wo_duration');
-            $aContextArgs['this->wo_end_date'] = date($sFormat, $iWOEndDate);
-
-            while ($oTrigger = $oTriggerSet->Fetch())
-            {
-              $oTrigger->DoActivate(array_merge($oObj->ToArgs('this'), $aContextArgs));
-            }
+            $oTrigger->DoActivate(array_merge($oObj->ToArgs('this'), $aContextArgs));
           }
         }
       }
@@ -77,9 +53,30 @@ class CheckScheduledActivity implements iBackgroundProcess
     return "processed scheduled activity: $iProcessed, " .implode(", ", $aList);
   }
 
-  protected function GetContextArgs($oObj)
+  protected function GetContextArgs($oObj, $sActionType, $sAttCode)
   {
-    # code...
+    // wo_start_date - время начала для наряда на работу
+    // wo_end_date - время окончания наряда (если wo_duration == 0, wo_end_date = wo_start_date)
+    //
+    // action_date - время основного действия, установленного в активности (м.б. текущая дата)
+    // next_action_date - время следующего основного действия в контексте текущего основного
+    // main_action_date - время основгого дейтсвия  контексте предварительного
+    $sFormat = AttributeDateTime::GetDateFormat();
+    $aContextArgs = array();
+    if ($sActionType == 'main')
+    {
+      $aContextArgs['this->next_action_date'] = $oObj->GetActionDate() ?: '-' ; // Текущее время не учитывается
+      $aContextArgs['this->wo_start_date'] = $oObj->Get($sAttCode);
+    }
+    elseif ($sActionType == 'preliminary')
+    {
+      $iActionDate = AttributeDateTime::GetAsUnixSeconds($oObj->Get($sAttCode)) + $oObj->GetPreActionInterval();
+      $aContextArgs['this->main_action_date'] = date($sFormat, $iActionDate);
+      $aContextArgs['this->wo_start_date'] = $aContextArgs['this->main_action_date'];
+    }
+    $iWOEndDate = AttributeDateTime::GetAsUnixSeconds($aContextArgs['this->wo_start_date']) + $oObj->Get('wo_duration');
+    $aContextArgs['this->wo_end_date'] = date($sFormat, $iWOEndDate);
+    return $aContextArgs;
   }
 }
 
@@ -107,5 +104,3 @@ class TriggerOnScheduledActivity extends TriggerOnObject
     MetaModel::Init_SetZListItems('list', array('finalclass', 'target_class', 'action_type', 'description'));
   }
 }
-
-?>

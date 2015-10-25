@@ -37,7 +37,7 @@
         <field id="category_id" xsi:type="AttributeExternalKey">
           <sql>category_id</sql>
           <target_class>ScheduledActivityCategory</target_class>
-          <is_null_allowed>false</is_null_allowed>
+          <is_null_allowed>true</is_null_allowed>
           <on_target_delete>DEL_MANUAL</on_target_delete>
         </field>
         <field id="category_name" xsi:type="AttributeExternalField">
@@ -73,7 +73,7 @@
             <value id="1">1</value>
           </values>
           <sql>pre_action_enabled</sql>
-          <default_value/>
+          <default_value>0</default_value>
           <is_null_allowed>true</is_null_allowed>
           <display_style>radio_horizontal</display_style>
         </field>
@@ -194,6 +194,12 @@
               <attribute id="pre_action_interval">
                 <must_prompt/>
               </attribute>
+              <attribute id="start_date">
+                <must_prompt/>
+              </attribute>
+              <attribute id="end_date">
+                <must_prompt/>
+              </attribute>
             </flags>
             <transitions>
               <transition id="ev_deactivate">
@@ -211,15 +217,25 @@
           <type>Overload-DBObject</type>
           <code>
             <![CDATA[
-              public function GetActionDate($currentTime = 'now', $bRetObj = false)
+              public function GetActionDate($iCurrentTime = null, $bRetInt = false, $bAllowCurrentTime = false)
               {
+                $iCurrentTime || $iCurrentTime = time();
+                $iStartDate = $this->Get('start_date') ? AttributeDateTime::GetAsUnixSeconds($this->Get('start_date')) : 0;
+                if ($iStartDate > $iCurrentTime) {
+                  $bAllowCurrentTime = true;
+                  $iCurrentTime = $iStartDate;
+                }
                 try {
                   $oCron = Cron\CronExpression::factory($this->Get('periodicity'));
-                  if ($bRetObj) return $oCron->getNextRunDate($currentTime);
-                  return $oCron->getNextRunDate($currentTime)->format(AttributeDateTime::GetDateFormat());
+                  $iActionDate = $oCron->getNextRunDate("@$iCurrentTime", 0, $bAllowCurrentTime)->getTimestamp();
                 } catch(Exception $e) {
+                  error_log($e);
                   return null;
                 }
+                $iEndDate = $this->Get('end_date') ? AttributeDateTime::GetAsUnixSeconds($this->Get('end_date')) : 0;
+                if ($iEndDate && $iActionDate > $iEndDate) return null;
+                if ($bRetInt) return $iActionDate;
+                return date(AttributeDateTime::GetDateFormat(), $iActionDate);
               }
             ]]>
           </code>
@@ -236,9 +252,8 @@
                 $iPreActionInrerval = $this->GetPreActionInterval();
                 $iActionDate = $iNow;
                 do {
-                  $oActionDate = $this->GetActionDate("@$iActionDate", true);
-                  if (is_null($oActionDate)) return null;
-                  $iActionDate = $oActionDate->getTimestamp();
+                  $iActionDate = $this->GetActionDate($iActionDate, true);
+                  if (is_null($iActionDate)) return null;
                   $iPreActionDate = $iActionDate - $iPreActionInrerval;
                 } while ($iNow >= $iPreActionDate);
                 return date(AttributeDateTime::GetDateFormat(), $iPreActionDate);
@@ -254,20 +269,6 @@
             <![CDATA[
               public function GetPreActionInterval()
               {
-                // $iValue = (int)$this->Get('pre_action_interval_value');
-                // $sUnit = $this->Get('pre_action_interval_unit');
-                // return DateInterval::createFromDateString($iValue.' '.$sUnit);
-                //switch($sUnit) {
-                  // // Start with selected units and then fall through to seconds
-                  // case 'days':
-                  // $iValue = $iValue * 24; // 24 hours in 1 day
-                  // // Fall through
-                  // case 'hours':
-                  // $iValue = $iValue * 60; // 60 minutes in 1 hour
-                  // // Fall through
-                  // case 'minutes':
-                  // $iValue = $iValue * 60; // 60 seconds in 1 minute
-                //}
                 $iValue = $this->Get('pre_action_interval');
                 $iMaxInterval = 2678400; // Max interval 2678400 seconds (31 days)
                 return $iPreActionInrerval = $iValue < $iMaxInterval ? $iValue : $iMaxInterval;
@@ -285,6 +286,7 @@
               {
                 $sActionDate = $this->GetActionDate() ?: '';
                 $this->Set('action_date', $sActionDate);
+                if ($sActionDate == '') return false;
                 return true;
               }
             ]]>
@@ -300,6 +302,7 @@
               {
                 $sPreActionDate = $this->GetPreActionDate() ?: '';
                 $this->Set('pre_action_date', $sPreActionDate);
+                if ($sPreActionDate == '') return false;
                 return true;
               }
             ]]>
@@ -314,13 +317,17 @@
               protected function OnUpdate()
               {
                 // TODO: Перенести вызов при сохранении через веб-интерфейс
-                if ($this->Get('status') == 'active')
+                $now = date(AttributeDateTime::GetDateFormat());
+                $end = $this->Get('end_date');
+                $start = $this->Get('start_date');
+                if ($this->Get('status') == 'active' && (!$end || $end > $now) && (!$start || $end >= $start))
                 {
-                  $this->SetActionDate();
+                  $this->SetActionDate(); // TODO: Добавить деактивацию, если следующая дата запуска будет после даты окончания
                   ($this->Get('pre_action_enabled') && $this->SetPreActionDate()) || $this->Reset('pre_action_date');
                 }
                 else
                 {
+                  $this->ApplyStimulus('ev_deactivate');
                   $this->Reset('action_date');
                   $this->Reset('pre_action_date');
                 }
@@ -372,6 +379,9 @@
                     <item id="org_id">
                       <rank>20</rank>
                     </item>
+                    <item id="caller_id">
+                      <rank>25</rank>
+                    </item>
                     <item id="team_id">
                       <rank>30</rank>
                     </item>
@@ -387,12 +397,12 @@
                     <item id="status">
                       <rank>70</rank>
                     </item>
-                    <!-- <item id="start_date">
+                     <item id="start_date">
                       <rank>80</rank>
                     </item>
                     <item id="end_date">
                       <rank>90</rank>
-                    </item> -->
+                    </item>
                     <item id="periodicity">
                       <rank>100</rank>
                     </item>
@@ -452,6 +462,9 @@
             <item id="org_id">
               <rank>20</rank>
             </item>
+            <item id="caller_id">
+              <rank>25</rank>
+            </item>
             <item id="team_id">
               <rank>30</rank>
             </item>
@@ -464,12 +477,12 @@
             <item id="status">
               <rank>60</rank>
             </item>
-            <!-- <item id="start_date">
+             <item id="start_date">
               <rank>70</rank>
             </item>
             <item id="end_date">
               <rank>80</rank>
-            </item> -->
+            </item>
             <item id="action_date">
               <rank>90</rank>
             </item>
@@ -489,6 +502,9 @@
             <item id="category_id">
               <rank>20</rank>
             </item>
+            <item id="caller_id">
+              <rank>25</rank>
+            </item>
             <item id="team_id">
               <rank>30</rank>
             </item>
@@ -498,12 +514,12 @@
             <item id="status">
               <rank>50</rank>
             </item>
-            <!-- <item id="start_date">
+             <item id="start_date">
               <rank>60</rank>
             </item>
             <item id="end_date">
               <rank>70</rank>
-            </item> -->
+            </item>
             <item id="action_date">
               <rank>80</rank>
             </item>
@@ -663,10 +679,54 @@
         </list>
       </presentation>
     </class>
+    <class id="WorkOrder">
+      <fields>
+        <field id="ticket_org" xsi:type="AttributeExternalField" _delta="define">
+          <extkey_attcode>ticket_id</extkey_attcode>
+          <target_attcode>org_id</target_attcode>
+        </field>
+        <field id="ticket_caller" xsi:type="AttributeExternalField" _delta="define">
+          <extkey_attcode>ticket_id</extkey_attcode>
+          <target_attcode>caller_id</target_attcode>
+        </field>
+      </fields>
+      <presentation>
+        <details>
+          <items>
+            <item id="ticket_org" _delta="define">
+              <rank>32</rank>
+            </item>
+            <item id="ticket_caller" _delta="define">
+              <rank>34</rank>
+            </item>
+          </items>
+        </details>
+        <search>
+          <items>
+            <item id="ticket_org" _delta="define">
+              <rank>32</rank>
+            </item>
+            <item id="ticket_caller" _delta="define">
+              <rank>34</rank>
+            </item>
+          </items>
+        </search>
+        <list>
+          <items>
+            <item id="ticket_org" _delta="define">
+              <rank>22</rank>
+            </item>
+            <item id="ticket_caller" _delta="define">
+              <rank>24</rank>
+            </item>
+          </items>
+        </list>
+      </presentation>
+    </class>
   </classes>
   <menus>
     <menu id="WorkOrderManagement" xsi:type="MenuGroup" _delta="define">
-      <rank>44</rank>
+      <rank>58</rank>
     </menu>
     <menu id="Calendar:Overview" xsi:type="DashboardMenuNode" _delta="define">
       <rank>0</rank>

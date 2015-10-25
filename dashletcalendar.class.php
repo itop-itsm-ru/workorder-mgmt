@@ -25,9 +25,7 @@ class DashletCalendar extends Dashlet
   public function Render($oPage, $bEditMode = false, $aExtraParams = array())
   {
 
-    $sId = 'calendar';
-
-    $oPage->add_linked_stylesheet('../'.$this->sModuleUrlBase.'custom.css');
+    $oPage->add_linked_stylesheet('../'.$this->sModuleUrlBase.'fullcalendar/custom.css');
     $oPage->add_linked_stylesheet('../'.$this->sModuleUrlBase.'fullcalendar/fullcalendar.min.css');
     // $oPage->add_linked_script('../'.$this->sModuleUrlBase.'fullcalendar/lib/jquery.min.js');
     $oPage->add_linked_script('../'.$this->sModuleUrlBase.'fullcalendar/lib/moment.min.js');
@@ -35,7 +33,7 @@ class DashletCalendar extends Dashlet
     $oPage->add_linked_script('../'.$this->sModuleUrlBase.'fullcalendar/lang/ru.js');
 
     $sTitle = $this->aProperties['title'];
-    $sQuery = $this->aProperties['query'];
+    // $sQuery = $this->aProperties['query'];
 
     $oPage->add('<div id="dashlet-calendar" class="dashlet-content">');
 
@@ -44,11 +42,13 @@ class DashletCalendar extends Dashlet
     {
       $oPage->add('<h1>'.$sHtmlTitle.'</h1>');
     }
+    // TODO: Язык
+    $sLanguage = substr(strtolower(trim(UserRights::GetUserLanguage())), 0, 2);
     $sURL = '../'.$this->sModuleUrlBase.'ajax.php';
     $oPage->add_ready_script(
 <<<EOF
     $('#calendar').fullCalendar({
-      lang: 'ru',
+      lang: '$sLanguage',
       events: '$sURL',
       timeFormat: 'H:mm',
       header: {
@@ -73,5 +73,3 @@ EOF
     // $oForm->AddField($oField);
   }
 }
-
-?>
