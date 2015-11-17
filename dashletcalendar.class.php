@@ -17,7 +17,7 @@ class DashletCalendar extends Dashlet
   {
     return array(
       'label' => Dict::S('UI:DashletCalendar:Label'),
-      'icon' => 'env-'.Utils::GetCurrentEnvironment().'/workorder-mgmt/images/calendar.png',
+      'icon' => 'env-'.Utils::GetCurrentEnvironment().'/workorder-mgmt/images/timetable32.png',
       'description' => Dict::S('UI:DashletCalendar:Description'),
     );
   }
