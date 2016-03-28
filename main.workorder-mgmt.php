@@ -31,7 +31,7 @@ class CheckScheduledActivity implements iBackgroundProcess
             array(), // order by
             array('action_type' => $sActionType)
           );
-          $aContextArgs = $oTriggerSet->Count() > 0 ? $this->GetContextArgs($oObj, $sActionType, $sAttCode) : [];
+          $aContextArgs = $oTriggerSet->Count() > 0 ? $this->GetContextArgs($oObj, $sActionType, $sAttCode) : array();
           while ($oTrigger = $oTriggerSet->Fetch())
           {
             $oTrigger->DoActivate(array_merge($oObj->ToArgs('this'), $aContextArgs));
