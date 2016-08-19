@@ -742,7 +742,7 @@
           <cell id="0">
             <rank>0</rank>
             <dashlets>
-              <dashlet id="0" xsi:type="DashletCalendar">
+              <dashlet id="1" xsi:type="DashletCalendar">
                 <rank>0</rank>
                 <title>UI:WorkOrderCalendar:Title</title>
                 <query>SELECT WorkOrder</query>
@@ -752,7 +752,7 @@
           <cell id="1">
             <rank>1</rank>
             <dashlets>
-              <dashlet id="1" xsi:type="DashletEmptyCell">
+              <dashlet id="2" xsi:type="DashletEmptyCell">
                 <rank>0</rank>
               </dashlet>
             </dashlets>
