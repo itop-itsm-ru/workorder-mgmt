@@ -112,8 +112,33 @@ Dict::Add('RU RU', 'Russian', 'Russian', array(
     'Menu:NotificationsMenu' => 'Триггеры и действия',
     'Menu:NotificationsMenu+' => 'Настройка триггеров и действий',
 
-    'UI:DashletCalendar:Label' => 'Календарь работ',
-    'UI:DashletCalendar:Description' => 'Календарь запланированных работ',
+
+    'UI:DashletCalendar:Label' => 'Календарь',
+    'UI:DashletCalendar:Description' => 'Календарь',
+
+    'UI:WorkOrderCalendar:Title' => 'Календарь работ',
+    'UI:WorkOrderCalendar:Title+' => 'Календарь работ',
+
+    'UI:DashletCalendar:Prop-Title' => 'Название',
+    'UI:DashletCalendar:Prop-Default-View' => 'Вид по умолчанию',
+    'UI:DashletCalendar:Prop-Default-View:Month' => 'Месяц',
+    'UI:DashletCalendar:Prop-Default-View:Week' => 'Неделя',
+    'UI:DashletCalendar:Prop-Default-View:Day' => 'День',
+    'UI:DashletCalendar:Prop-Agenda-Week' => 'Неделя по часам',
+    'UI:DashletCalendar:Prop-Agenda-Day' => 'День по часам',
+
+    'UI:DashletCalendar:Prop-Query' => 'Запрос',
+    'UI:DashletCalendar:Prop-Start' => 'Начало',
+    'UI:DashletCalendar:Prop-Start+' => 'Начало события',
+    'UI:DashletCalendar:Prop-End' => 'Окончание',
+    'UI:DashletCalendar:Prop-End+' => 'Окончание события',
+    'UI:DashletCalendar:Prop-Color' => 'Цвет',
+    'UI:DashletCalendar:Prop-Color:Blue' => 'Синий',
+    'UI:DashletCalendar:Prop-Color:Green' => 'Зеленый',
+    'UI:DashletCalendar:Prop-Color:Red' => 'Красный',
+
+    'UI:DashletCalendar:Event:Prop-Title' => 'Заголовок события',
+    'UI:DashletCalendar:Event:Prop-Desc' => 'Описание события',
 
     // TODO: перенести в itop-rus
     'Ticket:ImpactAnalysis' => 'Анализ влияния',

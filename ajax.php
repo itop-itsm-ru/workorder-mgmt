@@ -6,16 +6,24 @@ try {
     require_once(APPROOT . '/application/startup.inc.php');
     require_once(APPROOT . '/application/loginwebpage.class.inc.php');
     LoginWebPage::DoLogin(); // Check user rights and prompt if needed
-    $sStartDate = utils::ReadParam('start', '');
-    $sEndDate = utils::ReadParam('end', '');
-    $sQuery = "SELECT WorkOrder WHERE start_date > '$sStartDate' AND start_date < '$sEndDate'";
-    $oObjectSet = new DBObjectSet(DBObjectSearch::FromOQL($sQuery));
+    $sStartDateValue = utils::ReadParam('start', '');
+    $sStartDateAttr = utils::ReadParam('start_attr', '');
+    $sEndDateValue = utils::ReadParam('end', '');
+    $sEndDateAttr = utils::ReadParam('end_attr', null);
+    $sTitleAttr = utils::ReadParam('title_attr', '');
+    $sDescriptionAttr = utils::ReadParam('description_attr', null);
+    $sFilter = utils::ReadParam('filter', '');
+    $oFilter = DBObjectSearch::unserialize($sFilter);
+    $oFilter->AddCondition($sStartDateAttr, $sStartDateValue, '>');
+    // TODO: end_attr передается всегда, нужно сравнивать с пустой строкой?
+    $sEndDateAttr && $oFilter->AddCondition($sEndDateAttr, $sEndDateValue, '<');
+    $oObjectSet = new DBObjectSet($oFilter);
     $aEvents = array();
     while ($oObj = $oObjectSet->Fetch()) {
         $aEvent = array();
-        $aEvent['title'] = $oObj->Get('name') . "\n" . $oObj->Get('team_id_friendlyname') . "\n" . $oObj->Get('agent_id_friendlyname');
-        $aEvent['start'] = $oObj->Get('start_date');
-        $aEvent['end'] = $oObj->Get('end_date');
+        $aEvent['title'] = utils::HtmlToText($oObj->GetAsHTML($sTitleAttr)) . ($sDescriptionAttr ? "\n" . utils::HtmlToText($oObj->GetAsHTML($sDescriptionAttr)) : '');
+        $aEvent['start'] = $oObj->Get($sStartDateAttr);
+        $aEvent['end'] = $sEndDateAttr ? $oObj->Get($sEndDateAttr) : '';
         $aEvent['url'] = ApplicationContext::MakeObjectUrl(get_class($oObj), $oObj->GetKey());
         $aEvents[] = $aEvent;
     }
@@ -24,5 +32,3 @@ try {
 } catch (Exception $e) {
     echo $e->getMessage();
 }
-
-?>
