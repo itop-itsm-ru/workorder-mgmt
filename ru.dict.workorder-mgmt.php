@@ -127,11 +127,15 @@ Dict::Add('RU RU', 'Russian', 'Russian', array(
     'UI:DashletCalendar:Prop-Agenda-Week' => 'Неделя по часам',
     'UI:DashletCalendar:Prop-Agenda-Day' => 'День по часам',
 
+    'UI:DashletCalendar:EventSet' => 'Набор объектов %1$d',
+    'UI:DashletCalendar:Event:Prop-Enabled' => 'Вкл/Выкл',
     'UI:DashletCalendar:Event:Prop-Query' => 'Запрос',
     'UI:DashletCalendar:Event:Prop-Start' => 'Начало',
     'UI:DashletCalendar:Event:Prop-Start+' => 'Начало события',
     'UI:DashletCalendar:Event:Prop-End' => 'Окончание',
     'UI:DashletCalendar:Event:Prop-End+' => 'Окончание события',
+    'UI:DashletCalendar:Event:Prop-Title' => 'Заголовок события',
+    'UI:DashletCalendar:Event:Prop-Desc' => 'Описание события',
     'UI:DashletCalendar:Event:Prop-Color' => 'Цвет',
     'UI:DashletCalendar:Event:Prop-Color:blue' => 'Синий',
     'UI:DashletCalendar:Event:Prop-Color:green' => 'Зеленый',
@@ -139,8 +143,6 @@ Dict::Add('RU RU', 'Russian', 'Russian', array(
     'UI:DashletCalendar:Event:Prop-Color:brown' => 'Коричневый',
     'UI:DashletCalendar:Event:Prop-Color:gray' => 'Серый',
 
-    'UI:DashletCalendar:Event:Prop-Title' => 'Заголовок события',
-    'UI:DashletCalendar:Event:Prop-Desc' => 'Описание события',
 
     // TODO: перенести в itop-rus
     'Ticket:ImpactAnalysis' => 'Анализ влияния',

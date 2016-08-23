@@ -2,29 +2,41 @@
 
 class DashletCalendar extends Dashlet
 {
-    private $sModuleName = 'workorder-mgmt';
+    protected $sModuleName;
     protected $sModuleUrlBase;
-    protected $iEventResourcesCount = 3;
+    protected $sUrl;
+    protected $iEventResourcesCount;
 
     public function __construct($oModelReflection, $sId)
     {
+        $this->sModuleName = 'workorder-mgmt';
+        $this->sModuleUrlBase = 'env-' .  utils::GetCurrentEnvironment() . '/' . $this->sModuleName .'/';
+        $this->sUrl = '../' . $this->sModuleUrlBase . 'ajax.php';
+        $this->iEventResourcesCount = 3;
+
         parent::__construct($oModelReflection, $sId);
         $this->aProperties['title'] = Dict::S('UI:WorkOrderCalendar:Title');
         $this->aProperties['default_view'] = 'month';
         $this->aProperties['agenda_day'] = false;
         $this->aProperties['agenda_week'] = false;
 
-        $this->aProperties['query'] = 'SELECT WorkOrder';
-        $this->aProperties['start_attr'] = 'start_date';
-        $this->aProperties['end_attr'] = 'end_date';
-        $this->aProperties['title_attr'] = 'name';
-        $this->aProperties['description_attr'] = '';
-        $this->aProperties['color'] = 'gray';
+        $this->aProperties['enabled_1'] = true;
+        $this->aProperties['query_1'] = 'SELECT WorkOrder';
+        $this->aProperties['start_attr_1'] = 'start_date';
+        $this->aProperties['end_attr_1'] = 'end_date';
+        $this->aProperties['title_attr_1'] = 'name';
+        $this->aProperties['description_attr_1'] = '';
+        $this->aProperties['color_1'] = 'gray';
 
-//        $this->aProperties['event_resources'] = array();
-//        $this->aProperties['event_resources'][] = array('query' => 'SELECT Incident', 'start_attr' => 'start_date', 'end_attr' => 'end_date', 'color' => 'green');
-
-        $this->sModuleUrlBase = 'env-' . Utils::GetCurrentEnvironment() . '/workorder-mgmt/';
+        for ($i = 2; $i <= $this->iEventResourcesCount; $i++) {
+            $this->aProperties['enabled_'.$i] = false;
+            $this->aProperties['query_'.$i] = 'SELECT Ticket';
+            $this->aProperties['start_attr_'.$i] = 'start_date';
+            $this->aProperties['end_attr_'.$i] = 'end_date';
+            $this->aProperties['title_attr_'.$i] = 'ref';
+            $this->aProperties['description_attr_'.$i] = 'title';
+            $this->aProperties['color_'.$i] = 'gray';
+        }
     }
 
     static public function GetInfo()
@@ -46,15 +58,22 @@ class DashletCalendar extends Dashlet
         $oPage->add_linked_script('../' . $this->sModuleUrlBase . 'fullcalendar/fullcalendar.min.js');
         $oPage->add_linked_script('../' . $this->sModuleUrlBase . 'fullcalendar/lang/ru.js');
 
-        $oFilter = DBObjectSearch::FromOQL($this->aProperties['query']);
-        $sFilter = $oFilter->serialize();
-        $sStartAttr = $this->aProperties['start_attr'];
-        $sEndAttr = $this->aProperties['end_attr'];
-        $sTitleAttr = $this->aProperties['title_attr'];
-        $sDescriptionAttr = $this->aProperties['description_attr'];
-
-//        $aColors = utils::GetConfig()->GetModuleSetting($this->sModuleName, 'colors', array());
-        $sColor = $this->aProperties['color'];
+        $aResources = array();
+        for ($i = 1; $i <= $this->iEventResourcesCount; $i++) {
+            if (!$this->aProperties['enabled_'.$i]) continue;
+            $aResources[] = array(
+                'url' => $this->sUrl,
+                'color' => $this->aProperties['color_'.$i],
+                'data' => array(
+                    'filter' => DBObjectSearch::FromOQL($this->aProperties['query_'.$i])->serialize(),
+                    'start_attr' => $this->aProperties['start_attr_'.$i],
+                    'end_attr' => $this->aProperties['end_attr_'.$i],
+                    'title_attr' => $this->aProperties['title_attr_'.$i],
+                    'description_attr' => $this->aProperties['description_attr_'.$i],
+                )
+            );
+        }
+        $sResources = json_encode($aResources);
 
         $aViews = array(
             'month' => 'month',
@@ -75,19 +94,12 @@ class DashletCalendar extends Dashlet
 //        $sDateFomat = '';
         // TODO: Язык
         $sLanguage = substr(strtolower(trim(UserRights::GetUserLanguage())), 0, 2);
-        $sURL = '../' . $this->sModuleUrlBase . 'ajax.php';
 
         $oPage->add_ready_script(
             <<<EOF
                 $('#$sCalendarId').fullCalendar({
         lang: '$sLanguage',
-        eventSources: [
-            {   
-                url: '$sURL',
-                color: '$sColor',
-                data: { filter: '$sFilter', start_attr: '$sStartAttr', end_attr: '$sEndAttr', title_attr: '$sTitleAttr', description_attr: '$sDescriptionAttr' }
-            }
-        ],
+        eventSources: $sResources,
         timeFormat: '$sTimeFormat',
         header: {
             left:   'title',
@@ -187,85 +199,91 @@ EOF
         $oField = new DesignerBooleanField('agenda_day', Dict::S('UI:DashletCalendar:Prop-Agenda-Day'), $this->aProperties['agenda_day']);
         $oForm->AddField($oField);
 
-        // Event query
-        $oField = new DesignerLongTextField('query', Dict::S('UI:DashletCalendar:Event:Prop-Query'), $this->aProperties['query']);
-        $oField->SetMandatory();
-        $oForm->AddField($oField);
+        for ($i = 1; $i <= $this->iEventResourcesCount; $i++) {
 
-        // Event start and end dates
-        try {
-            // build the list of possible values (attribute codes + ...)
-            $aDateAttCodes = $this->GetDateAttributes($this->aProperties['query']);
-            $oFieldStart = new DesignerComboField('start_attr', Dict::S('UI:DashletCalendar:Event:Prop-Start'), $this->aProperties['start_attr']);
-            $oFieldStart->SetMandatory();
-            $oFieldStart->SetAllowedValues($aDateAttCodes);
+            $oForm->StartFieldSet(Dict::Format('UI:DashletCalendar:EventSet', $i));
 
-            $oFieldEnd = new DesignerComboField('end_attr', Dict::S('UI:DashletCalendar:Event:Prop-End'), $this->aProperties['end_attr']);
-            $oFieldEnd->SetAllowedValues($aDateAttCodes);
+            // Event set enabled
+            $oField = new DesignerBooleanField('enabled_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Enabled'), $this->aProperties['enabled_' . $i]);
+            $oForm->AddField($oField);
+
+            // Event query
+            $oField = new DesignerLongTextField('query_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Query'), $this->aProperties['query_' . $i]);
+            $oField->SetMandatory();
+            $oForm->AddField($oField);
+
+            // Event start and end dates
+            try {
+                // build the list of possible values (attribute codes + ...)
+                $aDateAttCodes = $this->GetDateAttributes($this->aProperties['query_' . $i]);
+                $oFieldStart = new DesignerComboField('start_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Start'), $this->aProperties['start_attr_' . $i]);
+                $oFieldStart->SetMandatory();
+                $oFieldStart->SetAllowedValues($aDateAttCodes);
+
+                $oFieldEnd = new DesignerComboField('end_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-End'), $this->aProperties['end_attr_' . $i]);
+                $oFieldEnd->SetAllowedValues($aDateAttCodes);
+            }
+            catch(Exception $e) {
+                $oFieldStart = new DesignerTextField('start_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Start'), $this->aProperties['start_attr_' . $i]);
+                $oFieldStart->SetReadOnly();
+                $oFieldEnd = new DesignerTextField('end_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-End'), $this->aProperties['end_attr_' . $i]);
+                $oFieldEnd->SetReadOnly();
+            }
+            $oForm->AddField($oFieldStart);
+            $oForm->AddField($oFieldEnd);
+
+            // Event title and description
+            try {
+                // build the list of possible values (attribute codes + ...)
+                $aAttCodes = $this->GetEventTextOptions($this->aProperties['query_' . $i]);
+                $oFieldTitle = new DesignerComboField('title_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Title'), $this->aProperties['title_attr_' . $i]);
+                $oFieldTitle->SetMandatory();
+                $oFieldTitle->SetAllowedValues($aAttCodes);
+
+                $oFieldDescription = new DesignerComboField('description_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Desc'), $this->aProperties['description_attr_' . $i]);
+                $oFieldDescription->SetAllowedValues($aAttCodes);
+            }
+            catch(Exception $e) {
+                $oFieldTitle = new DesignerTextField('title_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Title'), $this->aProperties['title_attr_' . $i]);
+                $oFieldTitle->SetReadOnly();
+
+                $oFieldDescription = new DesignerTextField('description_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Desc'), $this->aProperties['description_attr_' . $i]);
+                $oFieldDescription->SetReadOnly();
+            }
+            $oForm->AddField($oFieldTitle);
+            $oForm->AddField($oFieldDescription);
+
+            // Event color
+            $aColors = $this->GetColorOptions();
+            $oField = new DesignerComboField('color_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Color'), $this->aProperties['color_' . $i]);
+            $oField->SetMandatory();
+            $oField->SetAllowedValues($aColors);
+            $oForm->AddField($oField);
         }
-        catch(Exception $e) {
-            $oFieldStart = new DesignerTextField('start_attr', Dict::S('UI:DashletCalendar:Event:Prop-Start'), $this->aProperties['start_attr']);
-            $oFieldStart->SetReadOnly();
-            $oFieldEnd = new DesignerTextField('end_attr', Dict::S('UI:DashletCalendar:Event:Prop-End'), $this->aProperties['end_attr']);
-            $oFieldEnd->SetReadOnly();
-        }
-        $oForm->AddField($oFieldStart);
-        $oForm->AddField($oFieldEnd);
-
-        // Event title and description
-        try {
-            // build the list of possible values (attribute codes + ...)
-            $aAttCodes = $this->GetEventTextOptions($this->aProperties['query']);
-            $oFieldTitle = new DesignerComboField('title_attr', Dict::S('UI:DashletCalendar:Event:Prop-Title'), $this->aProperties['title_attr']);
-            $oFieldTitle->SetMandatory();
-            $oFieldTitle->SetAllowedValues($aAttCodes);
-
-            $oFieldDescription = new DesignerComboField('description_attr', Dict::S('UI:DashletCalendar:Event:Prop-Desc'), $this->aProperties['description_attr']);
-            $oFieldDescription->SetAllowedValues($aAttCodes);
-        }
-        catch(Exception $e) {
-            $oFieldTitle = new DesignerTextField('title_attr', Dict::S('UI:DashletCalendar:Event:Prop-Title'), $this->aProperties['title_attr']);
-            $oFieldTitle->SetReadOnly();
-
-            $oFieldDescription = new DesignerTextField('description_attr', Dict::S('UI:DashletCalendar:Event:Prop-Desc'), $this->aProperties['description_attr']);
-            $oFieldDescription->SetReadOnly();
-        }
-        $oForm->AddField($oFieldTitle);
-        $oForm->AddField($oFieldDescription);
-
-        // Event color
-        $aColors = $this->GetColorOptions();
-        $oField = new DesignerComboField('color', Dict::S('UI:DashletCalendar:Event:Prop-Color'), $this->aProperties['color']);
-        $oField->SetMandatory();
-        $oField->SetAllowedValues($aColors);
-        $oForm->AddField($oField);
     }
 
     public function Update($aValues, $aUpdatedFields)
     {
-        if (in_array('query', $aUpdatedFields))
-        {
-            try
-            {
-                $sCurrQuery = $aValues['query'];
-                $oCurrSearch = $this->oModelReflection->GetQuery($sCurrQuery);
-                $sCurrClass = $oCurrSearch->GetClass();
+        for ($i = 1; $i <= $this->iEventResourcesCount; $i++) {
+            if (in_array('query_' . $i, $aUpdatedFields)) {
+                try {
+                    $sCurrQuery = $aValues['query_'.$i];
+                    $oCurrSearch = $this->oModelReflection->GetQuery($sCurrQuery);
+                    $sCurrClass = $oCurrSearch->GetClass();
 
-                $sPrevQuery = $this->aProperties['query'];
-                $oPrevSearch = $this->oModelReflection->GetQuery($sPrevQuery);
-                $sPrevClass = $oPrevSearch->GetClass();
+                    $sPrevQuery = $this->aProperties['query_'.$i];
+                    $oPrevSearch = $this->oModelReflection->GetQuery($sPrevQuery);
+                    $sPrevClass = $oPrevSearch->GetClass();
 
-                if ($sCurrClass != $sPrevClass)
-                {
+                    if ($sCurrClass != $sPrevClass) {
+                        $this->bFormRedrawNeeded = true;
+                        // wrong but not necessary - unset($aUpdatedFields['group_by']);
+                        //$this->aProperties['start_attr_'.$i] = '';
+                        //$this->aProperties['end_attr_'.$i] = '';
+                    }
+                } catch (Exception $e) {
                     $this->bFormRedrawNeeded = true;
-                    // wrong but not necessary - unset($aUpdatedFields['group_by']);
-                    $this->aProperties['start_attr'] = '';
-                    $this->aProperties['end_attr'] = '';
                 }
-            }
-            catch(Exception $e)
-            {
-                $this->bFormRedrawNeeded = true;
             }
         }
         $oDashlet = parent::Update($aValues, $aUpdatedFields);
