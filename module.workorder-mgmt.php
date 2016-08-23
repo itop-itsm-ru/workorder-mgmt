@@ -1,25 +1,4 @@
 <?php
-// Git commit info
-if (file_exists(dirname(__FILE__).'/.git/HEAD'))
-{
-	$sHead = trim(preg_replace('/ref:/', '', file_get_contents(dirname(__FILE__).'/.git/HEAD'), -1, $iCount));
-	if ($iCount === 1)
-	{
-		$sCommit = '(commit '.file_get_contents(dirname(__FILE__).'/.git/'.$sHead, false, null, 0, 7).')';
-	}
-	elseif ($iCount === 0)
-	{
-		$sCommit = '(commit '.substr($sHead, 0, 7).')';
-	}
-	else
-	{
-		$sCommit = '(commit info not found)';
-	}
-}
-else
-{
-	$sCommit = '';
-}
 
 //
 // iTop module definition file
@@ -31,7 +10,7 @@ SetupWebPage::AddModule(
 	array(
 		// Identification
 		//
-		'label' => "Work Order Management $sCommit",
+		'label' => "Work Order Management",
 		'category' => 'business',
 
 		// Setup
@@ -39,7 +18,7 @@ SetupWebPage::AddModule(
 		'dependencies' => array(
 			'itop-tickets/2.2.0',
 			'itop-config-mgmt/2.2.0'
-			),
+		),
 		'mandatory' => false,
 		'visible' => true,
 
@@ -69,6 +48,13 @@ SetupWebPage::AddModule(
 		//
 		'settings' => array(
 			// Module specific settings go here, if any
+			'colors' => array(
+				'blue' => '#3b91ad',
+				'green' => '',
+				'red' => '',
+				'yellow',
+				'gray'
+			)
 		),
 	)
 );

@@ -2,6 +2,7 @@
 
 class DashletCalendar extends Dashlet
 {
+    private $sModuleName = 'workorder-mgmt';
     protected $sModuleUrlBase;
     protected $iEventResourcesCount = 3;
 
@@ -18,7 +19,7 @@ class DashletCalendar extends Dashlet
         $this->aProperties['end_attr'] = 'end_date';
         $this->aProperties['title_attr'] = 'name';
         $this->aProperties['description_attr'] = '';
-        $this->aProperties['color'] = 'blue';
+        $this->aProperties['color'] = 'gray';
 
 //        $this->aProperties['event_resources'] = array();
 //        $this->aProperties['event_resources'][] = array('query' => 'SELECT Incident', 'start_attr' => 'start_date', 'end_attr' => 'end_date', 'color' => 'green');
@@ -52,6 +53,7 @@ class DashletCalendar extends Dashlet
         $sTitleAttr = $this->aProperties['title_attr'];
         $sDescriptionAttr = $this->aProperties['description_attr'];
 
+//        $aColors = utils::GetConfig()->GetModuleSetting($this->sModuleName, 'colors', array());
         $sColor = $this->aProperties['color'];
 
         $aViews = array(
@@ -145,11 +147,28 @@ EOF
         return $aTitleAttrs;
     }
 
+    protected function GetColorOptions()
+    {
+        $aColorOpts = array();
+        $aColors = utils::GetConfig()->GetModuleSetting($this->sModuleName, 'colors', array('blue' => '#3b91ad'));
+        foreach ($aColors as $name => $value) {
+            if (is_integer($name)) {
+                $name = $value;
+            } elseif (!$value) {
+                $value = $name;
+            }
+            $aColorOpts[$value] = Dict::S('UI:DashletCalendar:Event:Prop-Color:' . $name);
+        }
+        return $aColorOpts;
+    }
+
     public function GetPropertiesFields(DesignerForm $oForm)
     {
+        // Calendar Title
         $oField = new DesignerTextField('title', Dict::S('UI:DashletCalendar:Prop-Title'), $this->aProperties['title']);
         $oForm->AddField($oField);
 
+        // Calendar default view
         $aViews = array(
             'month' => Dict::S('UI:DashletCalendar:Prop-Default-View:Month'),
             'week' => Dict::S('UI:DashletCalendar:Prop-Default-View:Week'),
@@ -160,44 +179,51 @@ EOF
         $oField->SetAllowedValues($aViews);
         $oForm->AddField($oField);
 
+        // Agenda week view
         $oField = new DesignerBooleanField('agenda_week', Dict::S('UI:DashletCalendar:Prop-Agenda-Week'), $this->aProperties['agenda_week']);
         $oForm->AddField($oField);
 
+        // Agenda day view
         $oField = new DesignerBooleanField('agenda_day', Dict::S('UI:DashletCalendar:Prop-Agenda-Day'), $this->aProperties['agenda_day']);
         $oForm->AddField($oField);
 
-        $oField = new DesignerLongTextField('query', Dict::S('UI:DashletCalendar:Prop-Query'), $this->aProperties['query']);
+        // Event query
+        $oField = new DesignerLongTextField('query', Dict::S('UI:DashletCalendar:Event:Prop-Query'), $this->aProperties['query']);
         $oField->SetMandatory();
         $oForm->AddField($oField);
 
+        // Event start and end dates
         try {
             // build the list of possible values (attribute codes + ...)
             $aDateAttCodes = $this->GetDateAttributes($this->aProperties['query']);
-            $oFieldStart = new DesignerComboField('start_attr', Dict::S('UI:DashletCalendar:Prop-Start'), $this->aProperties['start_attr']);
+            $oFieldStart = new DesignerComboField('start_attr', Dict::S('UI:DashletCalendar:Event:Prop-Start'), $this->aProperties['start_attr']);
             $oFieldStart->SetMandatory();
             $oFieldStart->SetAllowedValues($aDateAttCodes);
 
-            $oFieldEnd = new DesignerComboField('end_attr', Dict::S('UI:DashletCalendar:Prop-End'), $this->aProperties['end_attr']);
+            $oFieldEnd = new DesignerComboField('end_attr', Dict::S('UI:DashletCalendar:Event:Prop-End'), $this->aProperties['end_attr']);
             $oFieldEnd->SetAllowedValues($aDateAttCodes);
-        } catch(Exception $e) {
-            $oFieldStart = new DesignerTextField('start_attr', Dict::S('UI:DashletCalendar:Prop-Start'), $this->aProperties['start_attr']);
+        }
+        catch(Exception $e) {
+            $oFieldStart = new DesignerTextField('start_attr', Dict::S('UI:DashletCalendar:Event:Prop-Start'), $this->aProperties['start_attr']);
             $oFieldStart->SetReadOnly();
-            $oFieldEnd = new DesignerTextField('end_attr', Dict::S('UI:DashletCalendar:Prop-End'), $this->aProperties['end_attr']);
+            $oFieldEnd = new DesignerTextField('end_attr', Dict::S('UI:DashletCalendar:Event:Prop-End'), $this->aProperties['end_attr']);
             $oFieldEnd->SetReadOnly();
         }
         $oForm->AddField($oFieldStart);
         $oForm->AddField($oFieldEnd);
 
+        // Event title and description
         try {
             // build the list of possible values (attribute codes + ...)
-            $aAttcodes = $this->GetEventTextOptions($this->aProperties['query']);
+            $aAttCodes = $this->GetEventTextOptions($this->aProperties['query']);
             $oFieldTitle = new DesignerComboField('title_attr', Dict::S('UI:DashletCalendar:Event:Prop-Title'), $this->aProperties['title_attr']);
             $oFieldTitle->SetMandatory();
-            $oFieldTitle->SetAllowedValues($aAttcodes);
+            $oFieldTitle->SetAllowedValues($aAttCodes);
 
             $oFieldDescription = new DesignerComboField('description_attr', Dict::S('UI:DashletCalendar:Event:Prop-Desc'), $this->aProperties['description_attr']);
-            $oFieldDescription->SetAllowedValues($aAttcodes);
-        } catch(Exception $e) {
+            $oFieldDescription->SetAllowedValues($aAttCodes);
+        }
+        catch(Exception $e) {
             $oFieldTitle = new DesignerTextField('title_attr', Dict::S('UI:DashletCalendar:Event:Prop-Title'), $this->aProperties['title_attr']);
             $oFieldTitle->SetReadOnly();
 
@@ -207,19 +233,12 @@ EOF
         $oForm->AddField($oFieldTitle);
         $oForm->AddField($oFieldDescription);
 
-        // TODO: цвета в конфиг
-        $aColors = array(
-            'blue' => Dict::S('UI:DashletCalendar:Prop-Color:Blue'),
-            'green' => Dict::S('UI:DashletCalendar:Prop-Color:Green'),
-            'red' => Dict::S('UI:DashletCalendar:Prop-Color:Red'),
-        );
-
-        $oField = new DesignerComboField('color', Dict::S('UI:DashletCalendar:Prop-Color'), $this->aProperties['color']);
+        // Event color
+        $aColors = $this->GetColorOptions();
+        $oField = new DesignerComboField('color', Dict::S('UI:DashletCalendar:Event:Prop-Color'), $this->aProperties['color']);
         $oField->SetMandatory();
         $oField->SetAllowedValues($aColors);
         $oForm->AddField($oField);
-
-
     }
 
     public function Update($aValues, $aUpdatedFields)
