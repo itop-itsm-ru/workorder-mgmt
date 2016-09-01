@@ -6,7 +6,7 @@
 
 SetupWebPage::AddModule(
 	__FILE__, // Path to the current file, all other file names are relative to the directory containing this file
-	'workorder-mgmt/0.2.2',
+	'workorder-mgmt/0.2.3',
 	array(
 		// Identification
 		//

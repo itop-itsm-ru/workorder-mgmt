@@ -9,10 +9,10 @@ class DashletCalendar extends Dashlet
 
     public function __construct($oModelReflection, $sId)
     {
-        $this->sModuleName = 'workorder-mgmt';
-        $this->sModuleUrlBase = 'env-' .  utils::GetCurrentEnvironment() . '/' . $this->sModuleName .'/';
+        $this->sModuleName = $this->GetModuleName();
+        $this->sModuleUrlBase = 'env-' . utils::GetCurrentEnvironment() . '/' . $this->sModuleName . '/';
         $this->sUrl = '../' . $this->sModuleUrlBase . 'ajax.php';
-        $this->iEventResourcesCount = 3;
+        $this->iEventResourcesCount = utils::GetConfig()->GetModuleSetting($this->sModuleName, 'resources_count', 3);
 
         parent::__construct($oModelReflection, $sId);
         $this->aProperties['title'] = Dict::S('UI:WorkOrderCalendar:Title');
@@ -24,52 +24,52 @@ class DashletCalendar extends Dashlet
         $this->aProperties['query_1'] = 'SELECT WorkOrder';
         $this->aProperties['start_attr_1'] = 'start_date';
         $this->aProperties['end_attr_1'] = 'end_date';
+        $this->aProperties['unfinished_1'] = true;
         $this->aProperties['title_attr_1'] = 'name';
         $this->aProperties['description_attr_1'] = '';
         $this->aProperties['color_1'] = 'gray';
 
         for ($i = 2; $i <= $this->iEventResourcesCount; $i++) {
-            $this->aProperties['enabled_'.$i] = false;
-            $this->aProperties['query_'.$i] = 'SELECT Ticket';
-            $this->aProperties['start_attr_'.$i] = 'start_date';
-            $this->aProperties['end_attr_'.$i] = 'end_date';
-            $this->aProperties['title_attr_'.$i] = 'ref';
-            $this->aProperties['description_attr_'.$i] = 'title';
-            $this->aProperties['color_'.$i] = 'gray';
+            $this->aProperties['enabled_' . $i] = false;
+            $this->aProperties['query_' . $i] = 'SELECT Ticket';
+            $this->aProperties['start_attr_' . $i] = 'start_date';
+            $this->aProperties['end_attr_' . $i] = 'end_date';
+            $this->aProperties['unfinished_' . $i] = false;
+            $this->aProperties['title_attr_' . $i] = 'ref';
+            $this->aProperties['description_attr_' . $i] = 'title';
+            $this->aProperties['color_' . $i] = 'gray';
         }
+    }
+
+    static public function GetModuleName()
+    {
+        return 'workorder-mgmt';
     }
 
     static public function GetInfo()
     {
         return array(
             'label' => Dict::S('UI:DashletCalendar:Label'),
-            'icon' => 'env-' . Utils::GetCurrentEnvironment() . '/workorder-mgmt/images/timetable32.png',
+            'icon' => 'env-' . Utils::GetCurrentEnvironment() . '/'. DashletCalendar::GetModuleName() .'/images/timetable32.png',
             'description' => Dict::S('UI:DashletCalendar:Description'),
         );
     }
 
     public function Render($oPage, $bEditMode = false, $aExtraParams = array())
     {
-
-        $oPage->add_linked_stylesheet('../' . $this->sModuleUrlBase . 'fullcalendar/fullcalendar.min.css');
-        $oPage->add_linked_stylesheet('../' . $this->sModuleUrlBase . 'fullcalendar/custom.css');
-        // $oPage->add_linked_script('../'.$this->sModuleUrlBase.'fullcalendar/lib/jquery.min.js');
-        $oPage->add_linked_script('../' . $this->sModuleUrlBase . 'fullcalendar/lib/moment.min.js');
-        $oPage->add_linked_script('../' . $this->sModuleUrlBase . 'fullcalendar/fullcalendar.min.js');
-        $oPage->add_linked_script('../' . $this->sModuleUrlBase . 'fullcalendar/lang/ru.js');
-
         $aResources = array();
         for ($i = 1; $i <= $this->iEventResourcesCount; $i++) {
-            if (!$this->aProperties['enabled_'.$i]) continue;
+            if (!$this->aProperties['enabled_' . $i]) continue;
             $aResources[] = array(
                 'url' => $this->sUrl,
-                'color' => $this->aProperties['color_'.$i],
+                'color' => $this->aProperties['color_' . $i],
                 'data' => array(
-                    'filter' => DBObjectSearch::FromOQL($this->aProperties['query_'.$i])->serialize(),
-                    'start_attr' => $this->aProperties['start_attr_'.$i],
-                    'end_attr' => $this->aProperties['end_attr_'.$i],
-                    'title_attr' => $this->aProperties['title_attr_'.$i],
-                    'description_attr' => $this->aProperties['description_attr_'.$i],
+                    'filter' => DBObjectSearch::FromOQL($this->aProperties['query_' . $i])->serialize(),
+                    'start_attr' => $this->aProperties['start_attr_' . $i],
+                    'end_attr' => $this->aProperties['end_attr_' . $i],
+                    'unfinished' => $this->aProperties['unfinished_' . $i],
+                    'title_attr' => $this->aProperties['title_attr_' . $i],
+                    'description_attr' => $this->aProperties['description_attr_' . $i],
                 )
             );
         }
@@ -83,15 +83,15 @@ class DashletCalendar extends Dashlet
         $sDefaultView = $aViews[$this->aProperties['default_view']];
         $sViews = implode(', ', $aViews);
 
-        $sDashletId = 'dashlet-calendar_'.($bEditMode? 'edit_' : '').$this->sId;
-        $sCalendarId = 'calendar_'.($bEditMode? 'edit_' : '').$this->sId;
-        $oPage->add('<div id="'.$sDashletId.'" class="dashlet-content">');
+        $sDashletId = 'dashlet-calendar_' . ($bEditMode ? 'edit_' : '') . $this->sId;
+        $sCalendarId = 'calendar_' . ($bEditMode ? 'edit_' : '') . $this->sId;
+        $oPage->add('<div id="' . $sDashletId . '" class="dashlet-content">');
         $sHtmlTitle = htmlentities(Dict::S($this->aProperties['title']), ENT_QUOTES, 'UTF-8'); // done in the itop block
         if ($sHtmlTitle != '') {
             $oPage->add('<h1>' . $sHtmlTitle . '</h1>');
         }
         $sTimeFormat = 'H:mm'; // MetaModel::GetConfig()->Get();
-//        $sDateFomat = '';
+        //$sDateFomat = '';
         // TODO: Язык
         $sLanguage = substr(strtolower(trim(UserRights::GetUserLanguage())), 0, 2);
 
@@ -116,7 +116,7 @@ class DashletCalendar extends Dashlet
     })
 EOF
         );
-        $oPage->add('<div id="'.$sCalendarId.'"></div>');
+        $oPage->add('<div id="' . $sCalendarId . '"></div>');
         $oPage->add('</div>');
     }
 
@@ -125,10 +125,8 @@ EOF
         $oQuery = $this->oModelReflection->GetQuery($sOql);
         $sClass = $oQuery->GetClass();
         $aDateAttCodes = array();
-        foreach($this->oModelReflection->ListAttributes($sClass) as $sAttCode => $sAttType)
-        {
-            if (is_subclass_of($sAttType, 'AttributeDateTime') || $sAttType == 'AttributeDateTime')
-            {
+        foreach ($this->oModelReflection->ListAttributes($sClass) as $sAttCode => $sAttType) {
+            if (is_subclass_of($sAttType, 'AttributeDateTime') || $sAttType == 'AttributeDateTime') {
                 $sLabel = $this->oModelReflection->GetLabel($sClass, $sAttCode);
                 $aDateAttCodes[$sAttCode] = $sLabel;
             }
@@ -142,8 +140,7 @@ EOF
         $oQuery = $this->oModelReflection->GetQuery($sOql);
         $sClass = $oQuery->GetClass();
         $aTitleAttrs = array();
-        foreach($this->oModelReflection->ListAttributes($sClass) as $sAttCode => $sAttType)
-        {
+        foreach ($this->oModelReflection->ListAttributes($sClass) as $sAttCode => $sAttType) {
             if ($sAttType == 'AttributeLinkedSet') continue;
             if (is_subclass_of($sAttType, 'AttributeLinkedSet')) continue;
             if ($sAttType == 'AttributeFriendlyName') continue;
@@ -222,8 +219,7 @@ EOF
 
                 $oFieldEnd = new DesignerComboField('end_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-End'), $this->aProperties['end_attr_' . $i]);
                 $oFieldEnd->SetAllowedValues($aDateAttCodes);
-            }
-            catch(Exception $e) {
+            } catch (Exception $e) {
                 $oFieldStart = new DesignerTextField('start_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Start'), $this->aProperties['start_attr_' . $i]);
                 $oFieldStart->SetReadOnly();
                 $oFieldEnd = new DesignerTextField('end_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-End'), $this->aProperties['end_attr_' . $i]);
@@ -231,6 +227,9 @@ EOF
             }
             $oForm->AddField($oFieldStart);
             $oForm->AddField($oFieldEnd);
+
+            $oField = new DesignerBooleanField('unfinished_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Unfinished'), $this->aProperties['unfinished_' . $i]);
+            $oForm->AddField($oField);
 
             // Event title and description
             try {
@@ -242,8 +241,7 @@ EOF
 
                 $oFieldDescription = new DesignerComboField('description_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Desc'), $this->aProperties['description_attr_' . $i]);
                 $oFieldDescription->SetAllowedValues($aAttCodes);
-            }
-            catch(Exception $e) {
+            } catch (Exception $e) {
                 $oFieldTitle = new DesignerTextField('title_attr_' . $i, Dict::S('UI:DashletCalendar:Event:Prop-Title'), $this->aProperties['title_attr_' . $i]);
                 $oFieldTitle->SetReadOnly();
 
@@ -267,11 +265,11 @@ EOF
         for ($i = 1; $i <= $this->iEventResourcesCount; $i++) {
             if (in_array('query_' . $i, $aUpdatedFields)) {
                 try {
-                    $sCurrQuery = $aValues['query_'.$i];
+                    $sCurrQuery = $aValues['query_' . $i];
                     $oCurrSearch = $this->oModelReflection->GetQuery($sCurrQuery);
                     $sCurrClass = $oCurrSearch->GetClass();
 
-                    $sPrevQuery = $this->aProperties['query_'.$i];
+                    $sPrevQuery = $this->aProperties['query_' . $i];
                     $oPrevSearch = $this->oModelReflection->GetQuery($sPrevQuery);
                     $sPrevClass = $oPrevSearch->GetClass();
 
@@ -288,5 +286,30 @@ EOF
         }
         $oDashlet = parent::Update($aValues, $aUpdatedFields);
         return $oDashlet;
+    }
+}
+
+class DashletCalendarStaticContent implements iPageUIExtension
+{
+    public function GetBannerHtml(iTopWebPage $oPage)
+    {
+        $sModuleUrlBase = 'env-' . utils::GetCurrentEnvironment() . '/' . DashletCalendar::GetModuleName() . '/';
+        $oPage->add_linked_stylesheet('../' . $sModuleUrlBase . 'fullcalendar/fullcalendar.min.css');
+        $oPage->add_linked_stylesheet('../' . $sModuleUrlBase . 'fullcalendar/custom.css');
+        // $oPage->add_linked_script('../'.$sModuleUrlBase.'fullcalendar/lib/jquery.min.js'); // We use jquery from iTop source
+        $oPage->add_linked_script('../' . $sModuleUrlBase . 'fullcalendar/lib/moment.min.js');
+        $oPage->add_linked_script('../' . $sModuleUrlBase . 'fullcalendar/fullcalendar.min.js');
+        $oPage->add_linked_script('../' . $sModuleUrlBase . 'fullcalendar/lang/ru.js');
+        return '';
+    }
+
+    public function GetNorthPaneHtml(iTopWebPage $oPage)
+    {
+        return '';
+    }
+
+    public function GetSouthPaneHtml(iTopWebPage $oPage)
+    {
+        return '';
     }
 }

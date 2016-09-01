@@ -134,6 +134,7 @@ Dict::Add('RU RU', 'Russian', 'Russian', array(
     'UI:DashletCalendar:Event:Prop-Start+' => 'Начало события',
     'UI:DashletCalendar:Event:Prop-End' => 'Окончание',
     'UI:DashletCalendar:Event:Prop-End+' => 'Окончание события',
+    'UI:DashletCalendar:Event:Prop-Unfinished' => 'Незавершенные события',
     'UI:DashletCalendar:Event:Prop-Title' => 'Заголовок события',
     'UI:DashletCalendar:Event:Prop-Desc' => 'Описание события',
     'UI:DashletCalendar:Event:Prop-Color' => 'Цвет',
