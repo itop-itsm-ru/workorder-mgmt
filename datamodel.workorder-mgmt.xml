@@ -132,14 +132,6 @@
           <ext_key_to_remote>document_id</ext_key_to_remote>
           <duplicates/>
         </field>
-        <!-- <field id="services_list" xsi:type="AttributeLinkedSetIndirect">
-          <linked_class>lnkServiceToScheduledActivity</linked_class>
-          <ext_key_to_me>scheduledactivity_id</ext_key_to_me>
-          <count_min>0</count_min>
-          <count_max>0</count_max>
-          <ext_key_to_remote>service_id</ext_key_to_remote>
-          <duplicates/>
-        </field> -->
       </fields>
       <lifecycle>
         <attribute>status</attribute>
@@ -765,23 +757,23 @@
       <parent>WorkOrderManagement</parent>
       <template_file/>
     </menu>
-    <!-- <menu id="WorkOrderMgmt:NewWorkOrder" xsi:type="NewObjectMenuNode" _delta="define">
+    <menu id="WorkOrderMgmt:NewWorkOrder" xsi:type="NewObjectMenuNode" _delta="define">
       <rank>1</rank>
       <parent>WorkOrderMgmt:Shortcuts</parent>
       <class>WorkOrder</class>
-    </menu -->>
-    <menu id="WorkOrderMgmt:OpenWorkOrders" xsi:type="OQLMenuNode" _delta="define">
+    </menu>
+    <menu id="WorkOrderMgmt:MyWorkOrders" xsi:type="OQLMenuNode" _delta="define">
       <rank>2</rank>
+      <parent>WorkOrderMgmt:Shortcuts</parent>
+      <oql><![CDATA[SELECT WorkOrder WHERE agent_id = :current_contact_id AND status NOT IN ("closed")]]></oql>
+      <do_search/>
+    </menu>
+    <menu id="WorkOrderMgmt:OpenWorkOrders" xsi:type="OQLMenuNode" _delta="define">
+      <rank>3</rank>
       <parent>WorkOrderMgmt:Shortcuts</parent>
       <oql><![CDATA[SELECT WorkOrder WHERE status IN ("open")]]></oql>
       <do_search>1</do_search>
     </menu>
-    <!-- <menu id="WorkOrderMgmt:MyWorkOrders" xsi:type="OQLMenuNode" _delta="define">
-      <rank>3</rank>
-      <parent>WorkOrderMgmt:Shortcuts</parent>
-      <oql><![CDATA[SELECT WorkOrder WHERE agent_id = :current_contact_id AND status NOT IN ("closed")]]></oql>
-      <do_search/>
-    </menu> -->
     <menu id="WorkOrderMgmt:SearchWorkOrder" xsi:type="SearchMenuNode" _delta="define">
       <rank>4</rank>
       <parent>WorkOrderMgmt:Shortcuts</parent>
@@ -806,8 +798,44 @@
   </menus>
   <user_rights>
     <groups>
+      <group id="ScheduledActivity" _delta="define">
+        <classes>
+          <class id="ScheduledActivity"/>
+          <class id="ScheduledActivityCategory"/>
+          <class id="lnkDocumentToTicket"/>
+        </classes>
+      </group>
     </groups>
     <profiles>
+      <profile id="101" _delta="define">
+        <name>Scheduled Activity Manager</name>
+        <description>Person who manages the Scheduled Activity objects</description>
+        <groups>
+          <group id="ScheduledActivity">
+            <actions>
+              <action id="action:delete">allow</action>
+              <action id="action:write">allow</action>
+              <action id="action:bulk write">allow</action>
+              <action id="stimulus:ev_activate">allow</action>
+              <action id="stimulus:ev_deactivate">allow</action>
+            </actions>
+          </group>
+          <group id="Ticketing">
+            <actions>
+              <action id="action:delete">allow</action>
+              <action id="action:write">allow</action>
+              <action id="action:bulk write">allow</action>
+              <action id="stimulus:ev_close">allow</action>
+            </actions>
+          </group>
+          <group id="*">
+            <actions>
+              <action id="action:read">allow</action>
+              <action id="action:bulk read">allow</action>
+            </actions>
+          </group>
+        </groups>
+      </profile>
     </profiles>
   </user_rights>
 </itop_design>

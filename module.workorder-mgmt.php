@@ -6,7 +6,7 @@
 
 SetupWebPage::AddModule(
 	__FILE__, // Path to the current file, all other file names are relative to the directory containing this file
-	'workorder-mgmt/0.2.3',
+	'workorder-mgmt/1.0.0',
 	array(
 		// Identification
 		//
@@ -17,7 +17,9 @@ SetupWebPage::AddModule(
 		//
 		'dependencies' => array(
 			'itop-tickets/2.2.0',
-			'itop-config-mgmt/2.2.0'
+			'itop-config-mgmt/2.2.0',
+			'itop-profiles-itil/2.2.0',
+			'dashlet-calendar/1.0.0',
 		),
 		'mandatory' => false,
 		'visible' => true,
@@ -26,8 +28,7 @@ SetupWebPage::AddModule(
 		//
 		'datamodel' => array(
 			'model.workorder-mgmt.php',
-			'main.workorder-mgmt.php',
-			'dashletcalendar.class.php'
+			'main.workorder-mgmt.php'
 		),
 		'webservice' => array(
 
@@ -48,16 +49,6 @@ SetupWebPage::AddModule(
 		//
 		'settings' => array(
 			// Module specific settings go here, if any
-			'colors' => array(
-				'blue' => '#3b91ad',
-				'green' => '',
-				'red' => '',
-				'yellow',
-				'gray'
-			)
 		),
 	)
 );
-
-
-?>

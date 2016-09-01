@@ -2,7 +2,7 @@
 /**
  * Localized data
  *
- * @copyright   Copyright (C) 2015 Vladimir Kunin <v.b.kunin@gmail.com>
+ * @copyright   Copyright (C) 2016 Vladimir Kunin <v.b.kunin@gmail.com>
  * @license     http://opensource.org/licenses/AGPL-3.0
  */
 
@@ -48,8 +48,8 @@ Dict::Add('EN US', 'English', 'English', array(
     'Class:ScheduledActivity/Attribute:document_list' => 'Documents',
     'Class:ScheduledActivity/Attribute:document_list+' => 'Documents',
     'Class:ScheduledActivity/Attribute:periodicity' => 'Periodicity',
-    'Class:ScheduledActivity/Attribute:periodicity+' => 'Crontab-like pattern check on http://cronchecker.net/',
-    'Class:ScheduledActivity/Attribute:periodicity?' => 'Check your pattern on http://cronchecker.net/
+    'Class:ScheduledActivity/Attribute:periodicity+' => 'Crontab-like pattern check on http://crontab.guru/',
+    'Class:ScheduledActivity/Attribute:periodicity?' => 'Check your pattern on http://crontab.guru/
 *    *    *    *    *    *
 -    -    -    -    -    -
 |    |    |    |    |    |
@@ -89,6 +89,10 @@ Dict::Add('EN US', 'English', 'English', array(
     'Menu:Calendar:Overview' => 'Calendar',
     'Menu:Calendar:Overview+' => 'Calendar',
 
+    'Menu:WorkOrderMgmt:NewWorkOrder' => 'New work order',
+    'Menu:WorkOrderMgmt:NewWorkOrder+' => 'Create a work order',
+    'Menu:WorkOrderMgmt:MyWorkOrders' => 'My work orders',
+    'Menu:WorkOrderMgmt:MyWorkOrders+' => 'Work orders assigned to me',
     'Menu:WorkOrderMgmt:OpenWorkOrders' => 'Open work orders',
     'Menu:WorkOrderMgmt:OpenWorkOrders+' => 'Open work orders',
     'Menu:WorkOrderMgmt:SearchWorkOrder' => 'Search work orders',
@@ -111,8 +115,5 @@ Dict::Add('EN US', 'English', 'English', array(
 
     'Menu:NotificationsMenu' => 'Triggers and actions',
     'Menu:NotificationsMenu+' => 'Triggers and actions configuration',
-
-    'UI:DashletCalendar:Label' => 'Work Order Calendar',
-    'UI:DashletCalendar:Description' => 'Work Order Calendar',
 
 ));

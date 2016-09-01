@@ -2,7 +2,7 @@
 /**
  * Localized data
  *
- * @copyright   Copyright (C) 2015 Vladimir Kunin <v.b.kunin@gmail.com>
+ * @copyright   Copyright (C) 2016 Vladimir Kunin <v.b.kunin@gmail.com>
  * @license     http://opensource.org/licenses/AGPL-3.0
  */
 
@@ -48,8 +48,8 @@ Dict::Add('RU RU', 'Russian', 'Russian', array(
     'Class:ScheduledActivity/Attribute:document_list' => 'Документы',
     'Class:ScheduledActivity/Attribute:document_list+' => 'Документы',
     'Class:ScheduledActivity/Attribute:periodicity' => 'Периодичность',
-    'Class:ScheduledActivity/Attribute:periodicity+' => 'Шаблон периодичности формата Crontab, можно проверить здесь http://cronchecker.net/',
-    'Class:ScheduledActivity/Attribute:periodicity?' => 'Проверить можно здесь: http://cronchecker.net/
+    'Class:ScheduledActivity/Attribute:periodicity+' => 'Шаблон периодичности формата Crontab, можно проверить здесь http://crontab.guru/',
+    'Class:ScheduledActivity/Attribute:periodicity?' => 'Проверить можно здесь: http://crontab.guru/
 *    *    *    *    *    *
 -    -    -    -    -    -
 |    |    |    |    |    |
@@ -89,6 +89,10 @@ Dict::Add('RU RU', 'Russian', 'Russian', array(
     'Menu:Calendar:Overview' => 'Календарь работ',
     'Menu:Calendar:Overview+' => 'Календарь работ',
 
+    'Menu:WorkOrderMgmt:NewWorkOrder' => 'Новый наряд',
+    'Menu:WorkOrderMgmt:NewWorkOrder+' => 'Новый наряд на рабоу',
+    'Menu:WorkOrderMgmt:MyWorkOrders' => 'Назначенные мне',
+    'Menu:WorkOrderMgmt:MyWorkOrders+' => 'Назначенные мне наряды на работу',
     'Menu:WorkOrderMgmt:OpenWorkOrders' => 'Открытые наряды',
     'Menu:WorkOrderMgmt:OpenWorkOrders+' => 'Открытые наряды на работу',
     'Menu:WorkOrderMgmt:SearchWorkOrder' => 'Поиск нарядов',
@@ -111,42 +115,5 @@ Dict::Add('RU RU', 'Russian', 'Russian', array(
 
     'Menu:NotificationsMenu' => 'Триггеры и действия',
     'Menu:NotificationsMenu+' => 'Настройка триггеров и действий',
-
-
-    'UI:DashletCalendar:Label' => 'Календарь',
-    'UI:DashletCalendar:Description' => 'Календарь',
-
-    'UI:WorkOrderCalendar:Title' => 'Календарь работ',
-    'UI:WorkOrderCalendar:Title+' => 'Календарь работ',
-
-    'UI:DashletCalendar:Prop-Title' => 'Название',
-    'UI:DashletCalendar:Prop-Default-View' => 'Период по умолчанию',
-    'UI:DashletCalendar:Prop-Default-View:Month' => 'Месяц',
-    'UI:DashletCalendar:Prop-Default-View:Week' => 'Неделя',
-    'UI:DashletCalendar:Prop-Default-View:Day' => 'День',
-    'UI:DashletCalendar:Prop-Agenda-Week' => 'Неделя по часам',
-    'UI:DashletCalendar:Prop-Agenda-Day' => 'День по часам',
-
-    'UI:DashletCalendar:EventSet' => 'Набор объектов %1$d',
-    'UI:DashletCalendar:Event:Prop-Enabled' => 'Вкл/Выкл',
-    'UI:DashletCalendar:Event:Prop-Query' => 'Запрос',
-    'UI:DashletCalendar:Event:Prop-Start' => 'Начало',
-    'UI:DashletCalendar:Event:Prop-Start+' => 'Начало события',
-    'UI:DashletCalendar:Event:Prop-End' => 'Окончание',
-    'UI:DashletCalendar:Event:Prop-End+' => 'Окончание события',
-    'UI:DashletCalendar:Event:Prop-Unfinished' => 'Незавершенные события',
-    'UI:DashletCalendar:Event:Prop-Title' => 'Заголовок события',
-    'UI:DashletCalendar:Event:Prop-Desc' => 'Описание события',
-    'UI:DashletCalendar:Event:Prop-Color' => 'Цвет',
-    'UI:DashletCalendar:Event:Prop-Color:blue' => 'Синий',
-    'UI:DashletCalendar:Event:Prop-Color:green' => 'Зеленый',
-    'UI:DashletCalendar:Event:Prop-Color:red' => 'Красный',
-    'UI:DashletCalendar:Event:Prop-Color:brown' => 'Коричневый',
-    'UI:DashletCalendar:Event:Prop-Color:gray' => 'Серый',
-
-
-    // TODO: перенести в itop-rus
-    'Ticket:ImpactAnalysis' => 'Анализ влияния',
-    'Class:TriggerOnObject/Attribute:filter' => 'OQL фильтр',
 
 ));
